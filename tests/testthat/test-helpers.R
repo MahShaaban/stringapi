@@ -1,4 +1,4 @@
-context("test-functions")
+context("test-helpers")
 
 test_that("test make_url", {
   url1 <- 'http://string-db.org/api/tsv/resolve?identifier=ADD&species=9606'

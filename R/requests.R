@@ -1,31 +1,59 @@
-
+#' Get a resolve request
+#'
+#' @param identifier A \code{character} vector.
+#' @param species A \code{numeric}.
+#' @param format A \code{character} string. Possible values are 'only-ids'
+#' (default) or 'full'.
+#' @param db A \code{character} string. Possible values are 'string' (default)
+#' or 'stitch'.
+#'
+#' @return A \code{tibble}.
+#'
+#' @examples
+#' \dontrun{
+#' # make a resolve request
+#' get_resolve(identifier = 'ADD')
+#' }
+#'
 #' @export
-get_resolve <- function(identifier = NULL, species = NULL, format = 'only-ids',
+get_resolve <- function(identifier = NULL, species = 9606, format = 'only-ids',
                         db = 'string') {
-  # check if required args are nul
-  if(is.null(identifier) || is.null(species)) {
-    stop("identifier and species can't be null.")
+  # construct parameters list (param)
+  ## make and empty list
+  param <- list()
+
+  ## check and add identifier
+  if(is.null(identifier)) {
+    # stop if NULL
+    stop("identifier can't be null.")
   }
 
-  # check proper formate
-  formats <- c('only-ids', 'full')
-  stopifnot(format %in% formats)
-
-  # construct parameters list
-  param <- list()
   if(length(identifier) > 1) {
     # if length more than one use identifiers
     param$identifiers <- I(paste(identifier, collapse = '%0D'))
+    request <- 'resolveList'
   } else {
     # or, use identifier
     param$identifier <- identifier
+    request <- 'resolve'
   }
 
-  # add species and formate
+  ## check and add species
+  if(!is.numeric(species)) {
+    # stop if not numeric
+    stop('species should be a numeric.')
+  }
+
   param$species <- species
+
+  ## check and add format
+  if(!format %in% c('only-ids', 'full')) {
+    stop("format can only be on of only-ids or full.")
+  }
+
   param$format <- format
 
-  # make database (hostname)
+  # construct hostname (database)
   if(!db %in% c('string', 'stitch')) {
     stop('db can only be string or stitch')
   }
@@ -33,8 +61,10 @@ get_resolve <- function(identifier = NULL, species = NULL, format = 'only-ids',
   database <- switch(db,
                      'string' = 'string-db.org',
                      'stitch' = 'stitch.embl.de')
+
   # make url
-  url <- make_url(database = database, parameters = param)
+  url <- make_url(database = database,
+                  parameters = param)
 
   # get response
   resp <- send_request(url)
@@ -46,23 +76,34 @@ get_resolve <- function(identifier = NULL, species = NULL, format = 'only-ids',
   return(res)
 }
 
-
-
+#' Get abstracts request
+#'
+#' @inheritParams get_resolve
+#' @param limit A \code{numeric}.
+#' @param format A \code{character} string. Possible values are 'pmid'
+#' (default) or 'colon'.
+#'
+#' @return A \code{tibble}.
+#'
+#' @examples
+#' \dontrun{
+#' # make abstracts request
+#' get_abstracts(identifier = c('4932.YML115C', '4932.YJR075W', '4932.YEL036C'))
+#' }
+#'
 #' @export
-get_abstracts <- function(identifier = NULL, limit = 5, format = 'pmids',
+get_abstracts <- function(identifier = NULL, limit = 5, format = 'pmid',
                           db = 'string') {
-  # check if required args are nul
+  # construct parameters list (param)
+  ## make and empty list
+  param <- list()
+
+  ## check and add identifier
   if(is.null(identifier)) {
+    # stop if NULL
     stop("identifier can't be null.")
   }
 
-  # check proper formate
-  formats <- c('pmids', 'colon')
-  stopifnot(format %in% formats)
-
-  # construct parameters list
-  # construct parameters list
-  param <- list()
   if(length(identifier) > 1) {
     # if length more than one use identifiers
     param$identifiers <- I(paste(identifier, collapse = '%0D'))
@@ -73,11 +114,22 @@ get_abstracts <- function(identifier = NULL, limit = 5, format = 'pmids',
     request <- 'abstracts'
   }
 
-  # add limit and format
+  ## check and add limit
+  if(!is.numeric(limit)) {
+    # stop if not numeric
+    stop('limit should be a numeric.')
+  }
+
   param$limit <- limit
+
+  ## check and add format
+  if(!format %in% c('pmid', 'colon')) {
+    stop("format can only be on of pmid or colon.")
+  }
+
   param$format <- format
 
-  # make database (hostname)
+  # construct hostname (database)
   if(!db %in% c('string', 'stitch')) {
     stop('db can only be string or stitch')
   }
@@ -87,7 +139,9 @@ get_abstracts <- function(identifier = NULL, limit = 5, format = 'pmids',
                      'stitch' = 'stitch.embl.de')
 
   # make url
-  url <- make_url(database = database, request = request, parameters = param)
+  url <- make_url(database = database,
+                  request = request,
+                  parameters = param)
 
   # get response
   resp <- send_request(url)
@@ -99,17 +153,34 @@ get_abstracts <- function(identifier = NULL, limit = 5, format = 'pmids',
   return(res)
 }
 
-
+#' Get actions request
+#'
+#' @inheritParams get_resolve
+#' @inheritParams get_abstracts
+#' @param required_score A \code{numeric}.
+#' @param additional_network_nodes A \code{numeric}
+#'
+#' @return A \code{tibble}.
+#'
+#' @examples
+#' \dontrun{
+#' # make actions request
+#' get_actions(identifier = 'ADD')
+#' }
+#'
 #' @export
 get_actions <- function(identifier = NULL, limit = 5, required_score,
                         additional_network_nodes, db = 'string') {
-  # check if required args are nul
+  # construct parameters list (param)
+  ## make and empty list
+  param <- list()
+
+  ## check and add identifier
   if(is.null(identifier)) {
+    # stop if NULL
     stop("identifier can't be null.")
   }
 
-  # construct parameters list
-  param <- list()
   if(length(identifier) > 1) {
     # if length more than one use identifiers
     param$identifiers <- I(paste(identifier, collapse = '%0D'))
@@ -120,17 +191,25 @@ get_actions <- function(identifier = NULL, limit = 5, required_score,
     request <- 'actions'
   }
 
-  # add limit and format
+  ## check and add limit
+  if(!is.numeric(limit)) {
+    # stop if not numeric
+    stop('limit should be a numeric.')
+  }
+
   param$limit <- limit
+
+  ## check and add required_score
   if(!missing(required_score)) {
     param$required_score <- required_score
   }
 
+  ## check and add additional_network_nodes
   if(!missing(additional_network_nodes)) {
     param$additional_network_nodes <- additional_network_nodes
   }
 
-  # make database (hostname)
+  # construct hostname (database)
   if(!db %in% c('string', 'stitch')) {
     stop('db can only be string or stitch')
   }
@@ -140,7 +219,9 @@ get_actions <- function(identifier = NULL, limit = 5, required_score,
                      'stitch' = 'stitch.embl.de')
 
   # make url
-  url <- make_url(database = database, request = request, parameters = param)
+  url <- make_url(database = database,
+                  request = request,
+                  parameters = param)
 
   # get response
   resp <- send_request(url)
@@ -152,17 +233,33 @@ get_actions <- function(identifier = NULL, limit = 5, required_score,
   return(res)
 }
 
-
+#' Get interactors request
+#'
+#' @inheritParams get_resolve
+#' @inheritParams get_abstracts
+#' @inheritParams get_actions
+#'
+#' @return A \code{tibble}
+#'
+#' @examples
+#' \dontrun{
+#' # make interactors request
+#' get_interactors(identifier = 'ADD')
+#' }
+#'
 #' @export
 get_interactors <- function(identifier = NULL, limit = 5, required_score,
                             additional_network_nodes, db = 'string') {
-  # check if required args are nul
+  # construct parameters list (param)
+  ## make and empty list
+  param <- list()
+
+  ## check and add identifier
   if(is.null(identifier)) {
+    # stop if NULL
     stop("identifier can't be null.")
   }
 
-  # construct parameters list
-  param <- list()
   if(length(identifier) > 1) {
     # if length more than one use identifiers
     param$identifiers <- I(paste(identifier, collapse = '%0D'))
@@ -173,17 +270,25 @@ get_interactors <- function(identifier = NULL, limit = 5, required_score,
     request <- 'interactors'
   }
 
-  # add limit and format
+  ## check and add limit
+  if(!is.numeric(limit)) {
+    # stop if not numeric
+    stop('limit should be a numeric.')
+  }
+
   param$limit <- limit
+
+  ## check and add required_score
   if(!missing(required_score)) {
     param$required_score <- required_score
   }
 
+  ## check and add additional_network_nodes
   if(!missing(additional_network_nodes)) {
     param$additional_network_nodes <- additional_network_nodes
   }
 
-  # make database (hostname)
+  # construct hostname (database)
   if(!db %in% c('string', 'stitch')) {
     stop('db can only be string or stitch')
   }
@@ -193,7 +298,9 @@ get_interactors <- function(identifier = NULL, limit = 5, required_score,
                      'stitch' = 'stitch.embl.de')
 
   # make url
-  url <- make_url(database = database, request = request, parameters = param)
+  url <- make_url(database = database,
+                  request = request,
+                  parameters = param)
 
   # get response
   resp <- send_request(url)
@@ -205,16 +312,33 @@ get_interactors <- function(identifier = NULL, limit = 5, required_score,
   return(res)
 }
 
+#' Get interactions request
+#'
+#' @inheritParams get_resolve
+#' @inheritParams get_abstracts
+#' @inheritParams get_actions
+#'
+#' @return A \code{tibble}
+#'
+#' @examples
+#' \dontrun{
+#' # make interactions request
+#' get_interactions(identifier = 'ADD')
+#' }
+#'
 #' @export
 get_interactions <- function(identifier = NULL, limit = 5, required_score,
                              additional_network_nodes, db = 'string') {
-  # check if required args are nul
+  # construct parameters list (param)
+  ## make and empty list
+  param <- list()
+
+  ## check and add identifier
   if(is.null(identifier)) {
+    # stop if NULL
     stop("identifier can't be null.")
   }
 
-  # construct parameters list
-  param <- list()
   if(length(identifier) > 1) {
     # if length more than one use identifiers
     param$identifiers <- I(paste(identifier, collapse = '%0D'))
@@ -225,16 +349,25 @@ get_interactions <- function(identifier = NULL, limit = 5, required_score,
     request <- 'interactions'
   }
 
-  # add limit and format
+  ## check and add limit
+  if(!is.numeric(limit)) {
+    # stop if not numeric
+    stop('limit should be a numeric.')
+  }
+
   param$limit <- limit
+
+  ## check and add required_score
   if(!missing(required_score)) {
     param$required_score <- required_score
   }
 
+  ## check and add additional_network_nodes
   if(!missing(additional_network_nodes)) {
     param$additional_network_nodes <- additional_network_nodes
   }
-  # make database (hostname)
+
+  # construct hostname (database)
   if(!db %in% c('string', 'stitch')) {
     stop('db can only be string or stitch')
   }
@@ -244,65 +377,9 @@ get_interactions <- function(identifier = NULL, limit = 5, required_score,
                      'stitch' = 'stitch.embl.de')
 
   # make url
-  url <- make_url(database = database, request = request, parameters = param)
-
-  # get response
-  resp <- send_request(url)
-
-  # format contents
-  res <- format_content(resp)
-
-  # return results
-  return(res)
-}
-
-
-#' @export
-get_network <- function(identifier = NULL, limit = 5, required_score,
-                        additional_network_nodes, db = 'string',
-                        netwok_flavor = 'evidence') {
-  # check if required args are nul
-  if(is.null(identifier)) {
-    stop("identifier can't be null.")
-  }
-
-  # check proper network_flavor arg
-  netwok_flavors <- c('evidence', 'confidence', 'actions')
-  stopifnot(netwok_flavor %in% netwok_flavors)
-
-  # construct parameters list
-  param <- list()
-  if(length(identifier) > 1) {
-    # if length more than one use identifiers
-    param$identifiers <- I(paste(identifier, collapse = '%0D'))
-    request <- 'networkList'
-  } else {
-    # or, use identifier
-    param$identifier <- identifier
-    request <- 'network'
-  }
-
-  # add limit and format
-  param$limit <- limit
-  if(!missing(required_score)) {
-    param$required_score <- required_score
-  }
-
-  if(!missing(additional_network_nodes)) {
-    param$additional_network_nodes <- additional_network_nodes
-  }
-
-  # make database (hostname)
-  if(!db %in% c('string', 'stitch')) {
-    stop('db can only be string or stitch')
-  }
-
-  database <- switch(db,
-                     'string' = 'string-db.org',
-                     'stitch' = 'stitch.embl.de')
-
-  # make url
-  url <- make_url(database = database, request = request, parameters = param)
+  url <- make_url(database = database,
+                  request = request,
+                  parameters = param)
 
   # get response
   resp <- send_request(url)
