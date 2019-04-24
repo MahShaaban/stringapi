@@ -16,6 +16,7 @@ test_that("test make_url", {
   expect_error(make_url('string-db.net'))
   expect_error(make_url(access = 'API'))
   expect_error(make_url(format = 'csv'))
+  expect_error(make_url(parameters = c(identifier = 'ADD')))
 })
 
 test_that("replicate other examples.", {
@@ -61,7 +62,7 @@ test_that("test send_request", {
   expect_error(send_request(bad_url))
 })
 
-test_that("build_query works", {
+test_that("test build_query", {
   param <- build_query('resolve',
                        identifier = 'ADD',
                        species = 9606,
@@ -77,4 +78,21 @@ test_that("build_query works", {
   expect_error(build_query('resolve',
                            species = 9606,
                            format = 'full'))
+  expect_error(build_query('resolve',
+                           species = '9606'))
+  expect_error(build_query('resolve',
+                           identifier = 'ADD',
+                           format = 'somethingels'))
+  expect_error(build_query('resolve',
+                           identifier = 'ADD',
+                           limit = '5'))
+  expect_error(build_query('resolve'))
+  expect_error(build_query('resolve',
+                           identifier = NULL))
+})
+
+test_that("test build_hostname", {
+  expect_equal(build_hostname('string'), 'string-db.org')
+  expect_error(build_hostname())
+  expect_error(build_hostname('notstring'))
 })

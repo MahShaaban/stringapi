@@ -124,7 +124,7 @@ get_actions <- function(identifier = NULL, limit = 5, required_score,
                         additional_network_nodes, db = 'string') {
   # decide request type
   if(length(identifier) > 1) {
-    request <- 'actionstsList'
+    request <- 'actionsList'
   } else {
     request <- 'actions'
   }
