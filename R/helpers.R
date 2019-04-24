@@ -153,3 +153,91 @@ format_content <- function(resp, format = 'tsv') {
   # return res
   return(res)
 }
+
+#' @export
+build_query <- function(request, identifier, species, limit, required_score,
+                        additional_network_nodes, format) {
+  # construct parameters list (param)
+  ## make and empty list
+  param <- list()
+
+  ## check and add identifier
+  if(is.null(identifier)) {
+    # stop if NULL
+    stop("identifier can't be null.")
+  }
+
+  if(length(identifier) > 1) {
+    # if length more than one use identifiers
+    param$identifiers <- I(paste(identifier, collapse = '%0D'))
+  } else {
+    # or, use identifier
+    param$identifier <- identifier
+  }
+
+  ## optional args
+  if(!missing(species)) {
+    ## check and add species
+    if(!is.numeric(species)) {
+      # stop if not numeric
+      stop('species should be a numeric.')
+    }
+
+    param$species <- species
+  }
+
+  if(!missing(limit)) {
+    ## check and add limit
+    if(!is.numeric(limit)) {
+      # stop if not numeric
+      stop('limit should be a numeric.')
+    }
+
+    param$limit <- limit
+  }
+
+  ## check and add required_score
+  if(!missing(required_score)) {
+    param$required_score <- required_score
+  }
+
+  ## check and add additional_network_nodes
+  if(!missing(additional_network_nodes)) {
+    param$additional_network_nodes <- additional_network_nodes
+  }
+
+  if(!missing(format)) {
+    ## switch format by request
+    formats <- switch(request,
+                      'resolve' = c('only-ids', 'full'),
+                      'resolveList' = c('only-ids', 'full'),
+                      'abstracts' = c('pmid', 'colon'),
+                      'abstractsList' = c('pmid', 'colon'))
+
+    ## check and add format
+    if(!format %in% formats) {
+      stop(paste("format can only be one of only",
+                 paste(formats, collapse = '/')))
+    }
+
+    param$format <- format
+  }
+
+  # return param
+  return(param)
+}
+
+#' @export
+build_hostname <- function(db) {
+  # construct hostname (database)
+  if(!db %in% c('string', 'stitch')) {
+    stop('db can only be string or stitch')
+  }
+
+  database <- switch(db,
+                     'string' = 'string-db.org',
+                     'stitch' = 'stitch.embl.de')
+
+  # return database
+  return(database)
+}

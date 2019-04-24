@@ -61,3 +61,20 @@ test_that("test send_request", {
   expect_error(send_request(bad_url))
 })
 
+test_that("build_query works", {
+  param <- build_query('resolve',
+                       identifier = 'ADD',
+                       species = 9606,
+                       format = 'full')
+  expect_true(is.list(param))
+
+  param <- build_query('resolve',
+                       identifier = 'ADD',
+                       format = 'full')
+
+  expect_equal(names(param), c('identifier', 'format'))
+
+  expect_error(build_query('resolve',
+                           species = 9606,
+                           format = 'full'))
+})
