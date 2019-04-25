@@ -154,6 +154,25 @@ format_content <- function(resp, format = 'tsv') {
   return(res)
 }
 
+#' Build a query list
+#'
+#' @param request A \code{character} string.
+#' @param identifier A \code{character} string.
+#' @param species A \code{numeric}.
+#' @param limit A \code{numeric}.
+#' @param required_score A \code{numeric}.
+#' @param additional_network_nodes A \code{numeric}.
+#' @param format A \code{character} string.
+#'
+#' @return A \code{list}.
+#'
+#' @examples
+#' # build a query list for resolve request
+#' build_query('resolve',
+#'             identifier = 'ADD',
+#'             species = 9606,
+#'             format = 'full')
+#'
 #' @export
 build_query <- function(request, identifier, species, limit, required_score,
                         additional_network_nodes, format) {
@@ -227,6 +246,17 @@ build_query <- function(request, identifier, species, limit, required_score,
   return(param)
 }
 
+#' Build host name/database
+#'
+#' @param db A \code{character} string. Possible values are 'string' (default)
+#' or 'stitch'.
+#'
+#' @return A \code{character} string.
+#'
+#' @examples
+#' # build hostname for string
+#' build_hostname('string')
+#'
 #' @export
 build_hostname <- function(db) {
   # construct hostname (database)
