@@ -8,7 +8,7 @@ An R client for STRING API
 
 ## Overview
 
-Provide a set of functions to interact with the [STRING](https://string-db.org/cgi/input.pl) API in R. The functions are organized a round the API database and request types. The query parameters are checked and the output is returned in a tibble.
+Provide a set of functions to interact with the [STRING](https://string-db.org/cgi/input.pl) API in R. The functions are organized a round the API database and request/method types. The query parameters are checked and the output is returned in a `tibble`.
 
 ## Installing `stringapi`
 
@@ -23,17 +23,18 @@ devtools::install_github('MahShaaban/stringapi')
 A simple example to show how the package works is to contrast with an example query using `curl`
 
 ```bash
-curl http://string-db.org/api/tsv/resolve?identifier=ADD&species=9606
+curl https://string-db.org/api/tsv/get_string_ids?identifiers=p53%0dcdk2&species=9606
+
 ```
 
 This would look like the following using `stringapi`
 
 ```r
-get_resolve(identifier = 'ADD',
-            species = 9606)
+get_string_ids(identifiers = c('p53', 'dcdk2'),
+               species = 9606)
 ```
 
 ## Acknowledgement
 
-* This implementation is based on the STRING/STITCH API documentation, [here](http://stitch.embl.de/cgi/help.pl?UserId=qZfIPe69o9b4&sessionId=9MtGdB15CK8v).
+* This implementation is based on the STRING API v11 documentation, [here](https://string-db.org/cgi/help.pl?sessionId=Hk0j6heBuDI3).
 * **Best practices for API packages** guide was a very useful resource,[here](https://cran.r-project.org/web/packages/httr/vignettes/api-packages.html)

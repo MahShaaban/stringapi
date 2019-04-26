@@ -3,16 +3,13 @@
 #' Make a valid URL for the STRING API request. The functions translates STRING
 #' required URL fields into \code{modify_url} arguments.
 #'
-#' @param database A \code{character}. Possible values are 'string-db.org'
-#' (default) or 'string.embl.de' for the STRING database or 'stitch.embl.de'
-#' for the STITCH sister database.
+#' @param database A \code{character}. Possible value is 'string-db.org'.
 #' @param access A \code{character}. Possible values are 'api' (default) or
 #' services (not used).
 #' @param format A \code{character}. Only 'tsv' is used.
-#' @param request A \code{character}. Possibel values are 'resolve' (default),
-#' 'abstracts', 'actions', 'interactors' or 'interactions'. A corresponding
-#' request with the name 'requstList' is also available when querying for more
-#' than one item.
+#' @param request A \code{character}. Possibel values are 'get_string_ids'
+#' (default), network', 'interaction_partners', 'homology', 'homology_best',
+#' 'enrichment', 'functional_annotation', 'ppi_enrichment' or 'version'.
 #' @param parameters A \code{list}. Different requests require different
 #' parameters. The allowed parameters are documented in individual request
 #' functions.
@@ -20,16 +17,17 @@
 #' @return A \code{character} string of the URL.
 #'
 #' @examples
-#' # make a resolve request for ADD
-#' make_url(parameters = list(identifier = 'ADD'))
+#' # make a resolve request for PTCH1
+#' make_url(parameters = list(identifier = 'PTCH1'))
 #'
 #' @importFrom httr modify_url
 #'
 #' @export
 make_url <- function(database = 'string-db.org', access = 'api', format = 'tsv',
-                     request = 'resolve', parameters = NULL) {
+                     request = 'get_string_ids', parameters = NULL) {
   # check database host name
-  databases <- c('string-db.org', 'string.embl.de', 'stitch.embl.de')
+  #databases <- c('string-db.org', 'string.embl.de', 'stitch.embl.de')
+  databases <- 'string-db.org'
   if(!database %in% databases) {
     stop('Provide valid database host.')
   } else {
@@ -38,17 +36,19 @@ make_url <- function(database = 'string-db.org', access = 'api', format = 'tsv',
 
   # check and construct path
   ## access
-  accesses <- c('api', 'services')
+  #accesses <- c('api', 'services')
+  accesses <- 'api'
   stopifnot(access %in% accesses)
 
   ## format
-  formats <- c('tsv', 'json', 'tsv-no-header', 'psi-mi', 'psi-mi-tab')
+  #formats <- c('tsv', 'json', 'tsv-no-header', 'psi-mi', 'psi-mi-tab')
+  formats <- 'tsv'
   stopifnot(format %in% formats)
 
   ## request
-  requests <- c('resolve', 'resolveList', 'abstracts', 'abstractsList',
-                'interactors', 'interactorsList', 'actions', 'actionsList',
-                'interactions', 'interactionsList')
+  requests <- c('get_string_ids', 'network', 'interaction_partners',
+                'homology', 'homology_best','enrichment',
+                'functional_annotation', 'ppi_enrichment', 'version')
   stopifnot(request %in% requests)
 
   path <- paste(access, format, request, sep = '/')
@@ -64,7 +64,7 @@ make_url <- function(database = 'string-db.org', access = 'api', format = 'tsv',
 
   # modify the url
   url <- modify_url('',
-                    scheme = 'http',
+                    scheme = 'https',
                     hostname = hostname,
                     path = path,
                     query = query)
@@ -85,8 +85,8 @@ make_url <- function(database = 'string-db.org', access = 'api', format = 'tsv',
 #'
 #' @examples
 #' \dontrun{
-#' # make a resolve request for ADD
-#' url <- make_url(parameters = list(identifier = 'ADD'))
+#' # make a resolve request for PTCH1
+#' make_url(parameters = list(identifier = 'PTCH1'))
 #'
 #' # send request
 #' send_request(url)
@@ -119,24 +119,22 @@ send_request <- function(url) {
 #' @return A \code{tibble}.
 #'
 #' @examples
-#' # load example response object
-#' fl <- system.file('extdata', 'resp.rda', package = 'stringapi')
-#' load(fl)
+#' \dontrun{
+#' # make a resolve request for PTCH1
+#' make_url(parameters = list(identifier = 'PTCH1'))
+#'
+#' # send request
+#' resp <- send_request(url)
 #'
 #' # format content
-#' format_content(resp)
+#' format_content(resp, format = 'tsv')
+#' }
 #'
-#' @importFrom httr parse_url has_content content
+#' @importFrom httr has_content content
 #' @importFrom readr read_tsv
 #'
 #' @export
 format_content <- function(resp, format = 'tsv') {
-  # check formate is provided; if not, extract from url
-  if(is.null(format)) {
-    url <- parse_url(resp$url)
-    format <- strsplit(url$path, '/')[[1]][2]
-  }
-
   # check resp object hase contents
   if(has_content(resp)) {
     # extract content
@@ -146,7 +144,7 @@ format_content <- function(resp, format = 'tsv') {
     stop("resp has no content.")
   }
 
-  # read the data in the appropriate formate
+  # read the data in the appropriate format
   res <- switch(format,
                 'tsv' = read_tsv(cont))
 
@@ -156,45 +154,67 @@ format_content <- function(resp, format = 'tsv') {
 
 #' Build a query list
 #'
-#' @param request A \code{character} string.
-#' @param identifier A \code{character} string.
+#' @param identifiers A \code{character} string.
+#' @param background_string_identifiers A \code{character} string.
+#' @param echo_query A \code{logical} in the form '0' (default) or '1'.
 #' @param species A \code{numeric}.
+#' @param species_b A \code{numeric}.
 #' @param limit A \code{numeric}.
-#' @param required_score A \code{numeric}.
-#' @param additional_network_nodes A \code{numeric}.
-#' @param format A \code{character} string.
+#' @param required_score A \code{numeric}. Values are from 0 to 1000.
+#' @param add_nodes A \code{numeric}.
+#' @param allow_pubmed A \code{logical} in the form '1' (default) or '0'.
+#' @param caller_identity A \code{character} string.
 #'
 #' @return A \code{list}.
 #'
 #' @examples
-#' # build a query list for resolve request
-#' build_query('resolve',
-#'             identifier = 'ADD',
-#'             species = 9606,
-#'             format = 'full')
+#' # build a query list for 'PTCH1' species 9606
+#' build_query(identifiers = 'PTCH1',
+#'             species = 9606)
 #'
 #' @export
-build_query <- function(request, identifier, species, limit, required_score,
-                        additional_network_nodes, format) {
+build_query <- function(identifiers, background_string_identifiers,
+                        echo_query, species, species_b, limit, required_score,
+                        add_nodes, allow_pubmed, caller_identity) {
   # construct parameters list (param)
   ## make and empty list
   param <- list()
 
-  ## check and add identifier
-  if(is.null(identifier)) {
+  ## check and add identifiers
+  if(is.null(identifiers)) {
     # stop if NULL
-    stop("identifier can't be null.")
+    stop("identifiers can't be null.")
   }
 
-  if(length(identifier) > 1) {
+  if(length(identifiers) > 1) {
     # if length more than one use identifiers
-    param$identifiers <- I(paste(identifier, collapse = '%0D'))
+    param$identifiers <- I(paste(identifiers, collapse = '%0d'))
   } else {
-    # or, use identifier
-    param$identifier <- identifier
+    # or, use identifiers
+    param$identifier <- identifiers
   }
 
   ## optional args
+  if(!missing(background_string_identifiers)) {
+    ## check and add background_string_identifiers
+    if(length(background_string_identifiers) > 1) {
+      # if length more than one use identifiers
+      param$background_string_identifiers <- I(paste(background_string_identifiers, collapse = '%0d'))
+    } else {
+      # or, use identifiers
+      param$background_string_identifiers <- background_string_identifiers
+    }
+  }
+  if(!missing(echo_query)) {
+    ## check and add echo_query
+    if(!echo_query %in% c(0, 1)) {
+      # stop if not 0 or 1
+      stop('echo_query should be a 0 or 1.')
+    }
+
+    param$echo_query <- echo_query
+  }
+
   if(!missing(species)) {
     ## check and add species
     if(!is.numeric(species)) {
@@ -203,6 +223,16 @@ build_query <- function(request, identifier, species, limit, required_score,
     }
 
     param$species <- species
+  }
+
+  if(!missing(species_b)) {
+    ## check and add species_b
+    if(!is.numeric(species_b)) {
+      # stop if not numeric
+      stop('species_b should be a numeric.')
+    }
+
+    param$species_b <- species_b
   }
 
   if(!missing(limit)) {
@@ -220,54 +250,29 @@ build_query <- function(request, identifier, species, limit, required_score,
     param$required_score <- required_score
   }
 
-  ## check and add additional_network_nodes
-  if(!missing(additional_network_nodes)) {
-    param$additional_network_nodes <- additional_network_nodes
-  }
-
-  if(!missing(format)) {
-    ## switch format by request
-    formats <- switch(request,
-                      'resolve' = c('only-ids', 'full'),
-                      'resolveList' = c('only-ids', 'full'),
-                      'abstracts' = c('pmid', 'colon'),
-                      'abstractsList' = c('pmid', 'colon'))
-
-    ## check and add format
-    if(!format %in% formats) {
-      stop(paste("format can only be one of only",
-                 paste(formats, collapse = '/')))
+  if(!missing(add_nodes)) {
+    ## check and add add_nodes
+    if(!is.numeric(add_nodes)) {
+      # stop if not 0 or 1
+      stop('add_nodes should be a numeric.')
     }
 
-    param$format <- format
+    param$add_nodes <- add_nodes
   }
+
+  if(!missing(allow_pubmed)) {
+    ## check and add allow_pubmed
+    if(!allow_pubmed %in% c(0, 1)) {
+      # stop if not numeric
+      stop('add_nodes should be a 0 or 1.')
+    }
+
+    param$allow_pubmed <- allow_pubmed
+  }
+
+  ## check and add caller_identity
+  ## not implemented!
 
   # return param
   return(param)
-}
-
-#' Build host name/database
-#'
-#' @param db A \code{character} string. Possible values are 'string' (default)
-#' or 'stitch'.
-#'
-#' @return A \code{character} string.
-#'
-#' @examples
-#' # build hostname for string
-#' build_hostname('string')
-#'
-#' @export
-build_hostname <- function(db) {
-  # construct hostname (database)
-  if(!db %in% c('string', 'stitch')) {
-    stop('db can only be string or stitch')
-  }
-
-  database <- switch(db,
-                     'string' = 'string-db.org',
-                     'stitch' = 'stitch.embl.de')
-
-  # return database
-  return(database)
 }

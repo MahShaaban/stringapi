@@ -1,45 +1,122 @@
-#' Get a resolve request
+#' Mapping identifiers
 #'
-#' @param identifier A \code{character} vector.
-#' @param species A \code{numeric}.
-#' @param format A \code{character} string. Possible values are 'only-ids'
-#' (default) or 'full'.
-#' @param db A \code{character} string. Possible values are 'string' (default)
-#' or 'stitch'.
+#' Maps common protein names, synonyms and UniProt identifiers into STRING
+#' identifiers.
+#'
+#' @inheritParams build_query
 #'
 #' @return A \code{tibble}.
+#' \describe{
+#'   \item{queryItem}{(OPTIONAL) your input protein}
+#'   \item{queryIndex}{position of the protein in your input (starting from
+#'   position 0)}
+#'   \item{stringId}{STRING identifier}
+#'   \item{ncbiTaxonId}{NCBI taxon identifier}
+#'   \item{taxonName}{species name}
+#'   \item{preferredName}{common protein name}
+#'   \item{annotation}{protein annotation}
+#' }
+#'
+#' @family API methods
+#'
+#' @seealso
+#' \code{\link{network}}
+#' \code{\link{interaction_partners}}
+#' \code{\link{homology}}
+#' \code{\link{homology_best}}
+#' \code{\link{enrichment}}
+#' \code{\link{functional_annotation}}
+#' \code{\link{ppi_enrichment}}
+#'
+#' @source https://string-db.org/cgi/help.pl?subpage=api%23mapping-identifiers
 #'
 #' @examples
 #' \dontrun{
-#' # make a resolve request
-#' get_resolve(identifier = 'ADD')
+#' # make a get_string_ids request
+#' get_string_ids(identifiers = c('p53', 'dcdk2'),
+#'                species = 9606)
 #' }
 #'
 #' @export
-get_resolve <- function(identifier = NULL, species = 9606, format = 'only-ids',
-                        db = 'string') {
-  # decide request type
-  if(length(identifier) > 1) {
-    request <- 'resolveList'
-  } else {
-    request <- 'resolve'
-  }
-
+get_string_ids <- function(identifiers = NULL, echo_query = 0, limit = 5,
+                        species = 9606, caller_identity) {
   # construct query
-  param <- build_query(request,
-                       identifier = identifier,
+  param <- build_query(identifiers = identifiers,
+                       echo_query = echo_query,
+                       limit = limit,
+                       species = species)
+
+  # make url
+  url <- make_url(database = 'string-db.org',
+                  request = 'get_string_ids',
+                  parameters = param)
+
+  # get response
+  resp <- send_request(url)
+
+  # format contents
+  res <- format_content(resp)
+
+  # return results
+  return(res)
+}
+
+#' Getting the STRING network interactions
+#'
+#' Retrieves the network interactions for your input protein(s) in various
+#' text based formats.
+#'
+#' @inheritParams build_query
+#'
+#' @return A \code{tibble}.
+#' \describe{
+#'   \item{stringId_A}{STRING identifier (protein A)}
+#'   \item{stringId_B}{STRING identifier (protein B)}
+#'   \item{preferredName_A}{common protein name (protein A)}
+#'   \item{preferredName_B}{common protein name (protein B)}
+#'   \item{ncbiTaxonId}{NCBI taxon identifier}
+#'   \item{score}{combined score}
+#'   \item{nscore}{gene neighborhood score}
+#'   \item{fscore}{gene fusion score}
+#'   \item{pscore}{phylogenetic profile score}
+#'   \item{ascore}{coexpression score}
+#'   \item{escore}{experimental score}
+#'   \item{dscore}{database score}
+#'   \item{tscore}{textmining score}
+#' }
+#'
+#' @family API methods
+#'
+#' @seealso
+#' \code{\link{get_string_ids}}
+#' \code{\link{interaction_partners}}
+#' \code{\link{homology}}
+#' \code{\link{homology_best}}
+#' \code{\link{enrichment}}
+#' \code{\link{functional_annotation}}
+#' \code{\link{ppi_enrichment}}
+#'
+#' @source https://string-db.org/cgi/help.pl?subpage=api%23getting-the-string-network-interactions
+#'
+#' @examples
+#' \dontrun{
+#' # make a network request
+#' network(identifiers = c('TP53', 'EGFR', 'CDK2'),
+#'            required_score = 400)
+#' }
+#'
+#' @export
+network <- function(identifiers = NULL, species = 9606, required_score,
+                    add_nodes, caller_identity) {
+  # construct query
+  param <- build_query(identifiers = identifiers,
                        species = species,
-                       format = format)
-
-  # construct hostname
-  if(missing(db)) {
-    db <- 'string'
-  }
-  database <- build_hostname(db)
+                       required_score = required_score,
+                       add_nodes = add_nodes)
 
   # make url
-  url <- make_url(database = database,
-                  request = request,
+  url <- make_url(database = 'string-db.org',
+                  request = 'network',
                   parameters = param)
 
   # get response
@@ -52,46 +129,61 @@ get_resolve <- function(identifier = NULL, species = 9606, format = 'only-ids',
   return(res)
 }
 
-#' Get abstracts request
+#' Getting all the STRING interaction partners of the protein set
 #'
-#' @inheritParams get_resolve
-#' @param limit A \code{numeric}.
-#' @param format A \code{character} string. Possible values are 'pmid'
-#' (default) or 'colon'.
+#' Gets all the STRING interaction partners of your proteins.
+#'
+#' @inheritParams build_query
 #'
 #' @return A \code{tibble}.
+#' \describe{
+#'   \item{stringId_A}{STRING identifier (protein A)}
+#'   \item{stringId_B}{STRING identifier (protein B)}
+#'   \item{preferredName_A}{common protein name (protein A)}
+#'   \item{preferredName_B}{common protein name (protein B)}
+#'   \item{ncbiTaxonId}{NCBI taxon identifier}
+#'   \item{score}{combined score}
+#'   \item{nscore}{gene neighborhood score}
+#'   \item{fscore}{gene fusion score}
+#'   \item{pscore}{phylogenetic profile score}
+#'   \item{ascore}{coexpression score}
+#'   \item{escore}{experimental score}
+#'   \item{dscore}{database score}
+#'   \item{tscore}{textmining score}
+#' }
+#'
+#' @family API methods
+#'
+#' @seealso
+#' \code{\link{get_string_ids}}
+#' \code{\link{network}}
+#' \code{\link{homology}}
+#' \code{\link{homology_best}}
+#' \code{\link{enrichment}}
+#' \code{\link{functional_annotation}}
+#' \code{\link{ppi_enrichment}}
+#'
+#' @source https://string-db.org/cgi/help.pl?subpage=api%23getting-all-the-string-interaction-partners-of-the-protein-set
 #'
 #' @examples
 #' \dontrun{
-#' # make abstracts request
-#' get_abstracts(identifier = c('4932.YML115C', '4932.YJR075W', '4932.YEL036C'))
+#' # make a interaction_partners request
+#' interaction_partners(identifiers = c('TP53', 'CDK2'),
+#'                      limit = 10)
 #' }
 #'
 #' @export
-get_abstracts <- function(identifier = NULL, limit = 5, format = 'pmid',
-                          db = 'string') {
-  # decide request type
-  if(length(identifier) > 1) {
-    request <- 'abstractsList'
-  } else {
-    request <- 'abstracts'
-  }
-
+interaction_partners <- function(identifiers = NULL, limit = 5, species = 9606,
+                                 required_score, caller_identity) {
   # construct query
-  param <- build_query(request,
-                       identifier = identifier,
+  param <- build_query(identifiers = identifiers,
                        limit = limit,
-                       format = format)
-
-  # construct hostname
-  if(missing(db)) {
-    db <- 'string'
-  }
-  database <- build_hostname(db)
+                       species = species,
+                       required_score = required_score)
 
   # make url
-  url <- make_url(database = database,
-                  request = request,
+  url <- make_url(database = 'string-db.org',
+                  request = 'get_string_ids',
                   parameters = param)
 
   # get response
@@ -104,47 +196,49 @@ get_abstracts <- function(identifier = NULL, limit = 5, format = 'pmid',
   return(res)
 }
 
-#' Get actions request
+#' Retrieving similarity scores of the protein set
 #'
-#' @inheritParams get_resolve
-#' @inheritParams get_abstracts
-#' @param required_score A \code{numeric}.
-#' @param additional_network_nodes A \code{numeric}
+#' Retrieve the protein similarity scores between the input proteins.
+#'
+#' @inheritParams build_query
 #'
 #' @return A \code{tibble}.
+#' \describe{
+#'   \item{stringId_A}{STRING identifier (protein A)}
+#'   \item{ncbiTaxonId_A}{NCBI taxon identifier (protein A)}
+#'   \item{stringId_B}{STRING identifier (protein B)}
+#'   \item{ncbiTaxonId_B}{NCBI taxon identifier (protein B)}
+#'   \item{bitscore}{Smith-Waterman alignment bit score}
+#' }
+#'
+#' @family API methods
+#'
+#' @seealso
+#' \code{\link{get_string_ids}}
+#' \code{\link{network}}
+#' \code{\link{interaction_partners}}
+#' \code{\link{homology_best}}
+#' \code{\link{enrichment}}
+#' \code{\link{functional_annotation}}
+#' \code{\link{ppi_enrichment}}
+#'
+#' @source https://string-db.org/cgi/help.pl?subpage=api%23retrieving-similarity-scores-of-the-protein-set
 #'
 #' @examples
 #' \dontrun{
-#' # make actions request
-#' get_actions(identifier = 'ADD')
+#' # make a homology request
+#' homology(identifiers = c('TP53', 'CDK2'))
 #' }
 #'
 #' @export
-get_actions <- function(identifier = NULL, limit = 5, required_score,
-                        additional_network_nodes, db = 'string') {
-  # decide request type
-  if(length(identifier) > 1) {
-    request <- 'actionsList'
-  } else {
-    request <- 'actions'
-  }
-
+homology <- function(identifiers = NULL, species = 9606, caller_identity) {
   # construct query
-  param <- build_query(request,
-                       identifier = identifier,
-                       limit = limit,
-                       required_score = required_score,
-                       additional_network_nodes = additional_network_nodes)
-
-  # construct hostname
-  if(missing(db)) {
-    db <- 'string'
-  }
-  database <- build_hostname(db)
+  param <- build_query(identifiers = identifiers,
+                       species = species)
 
   # make url
-  url <- make_url(database = database,
-                  request = request,
+  url <- make_url(database = 'string-db.org',
+                  request = 'get_string_ids',
                   parameters = param)
 
   # get response
@@ -157,46 +251,53 @@ get_actions <- function(identifier = NULL, limit = 5, required_score,
   return(res)
 }
 
-#' Get interactors request
+#' Retrieving best similarity hits between species
 #'
-#' @inheritParams get_resolve
-#' @inheritParams get_abstracts
-#' @inheritParams get_actions
+#' Retrieve the best (highest) protein similarity hit between different species
+#' in your input.
 #'
-#' @return A \code{tibble}
+#' @inheritParams build_query
+#'
+#' @return A \code{tibble}.
+#' \describe{
+#'   \item{stringId_A}{STRING identifier (protein A)}
+#'   \item{ncbiTaxonId_A}{NCBI taxon identifier (protein A)}
+#'   \item{stringId_B}{STRING identifier (protein B)}
+#'   \item{ncbiTaxonId_B}{NCBI taxon identifier (protein B)}
+#'   \item{bitscore}{Smith-Waterman alignment bit score}
+#' }
+#'
+#' @family API methods
+#'
+#' @seealso
+#' \code{\link{get_string_ids}}
+#' \code{\link{network}}
+#' \code{\link{interaction_partners}}
+#' \code{\link{homology}}
+#' \code{\link{enrichment}}
+#' \code{\link{functional_annotation}}
+#' \code{\link{ppi_enrichment}}
+#'
+#' @source https://string-db.org/cgi/help.pl?subpage=api%23retrieving-best-similarity-hits-between-species
 #'
 #' @examples
 #' \dontrun{
-#' # make interactors request
-#' get_interactors(identifier = 'ADD')
+#' # make a homology_best request
+#' homology_best(identifiers = 'CDK1',
+#'               species_b = 10090)
 #' }
 #'
 #' @export
-get_interactors <- function(identifier = NULL, limit = 5, required_score,
-                            additional_network_nodes, db = 'string') {
-  # decide request type
-  if(length(identifier) > 1) {
-    request <- 'interactorsList'
-  } else {
-    request <- 'interactors'
-  }
-
+homology_best <- function(identifiers = NULL, species = 9606, species_b,
+                          caller_identity) {
   # construct query
-  param <- build_query(request,
-                       identifier = identifier,
-                       limit = limit,
-                       required_score = required_score,
-                       additional_network_nodes = additional_network_nodes)
-
-  # construct hostname
-  if(missing(db)) {
-    db <- 'string'
-  }
-  database <- build_hostname(db)
+  param <- build_query(identifiers = identifiers,
+                       species = species,
+                       species_b = species_b)
 
   # make url
-  url <- make_url(database = database,
-                  request = request,
+  url <- make_url(database = 'string-db.org',
+                  request = 'get_string_ids',
                   parameters = param)
 
   # get response
@@ -209,46 +310,184 @@ get_interactors <- function(identifier = NULL, limit = 5, required_score,
   return(res)
 }
 
-#' Get interactions request
+#' Getting functional enrichment
 #'
-#' @inheritParams get_resolve
-#' @inheritParams get_abstracts
-#' @inheritParams get_actions
+#' Performs the enrichment analysis of your set of proteins for the Gene
+#' Ontology, KEGG pathways, UniProt Keywords, PubMed publications, Pfam,
+#' InterPro and SMART domains.
 #'
-#' @return A \code{tibble}
+#' @inheritParams build_query
+#'
+#' @return A \code{tibble}.
+#' \describe{
+#'  \item{category}{term category (e.g. GO Process, KEGG pathways)}
+#'  \item{term}{enriched term (GO term, domain or pathway)}
+#'  \item{number_of_genes}{number of genes in your input list with the term
+#'  assigned}
+#'  \item{number_of_genes_in_background}{total number of genes in the
+#'  background proteome with the term assigned}
+#'  \item{ncbiTaxonId}{NCBI taxon identifier}
+#'  \item{inputGenes}{gene names from your input}
+#'  \item{preferredNames}{common protein names (in the same order as your
+#'  input Genes)}
+#'  \item{p_value}{raw p-value}
+#'  \item{fdr}{False Discovery Rate}
+#'  \item{description}{description of the enriched term}
+#' }
+#'
+#' @family API methods
+#'
+#' @seealso
+#' \code{\link{get_string_ids}}
+#' \code{\link{network}}
+#' \code{\link{interaction_partners}}
+#' \code{\link{homology}}
+#' \code{\link{homology_best}}
+#' \code{\link{functional_annotation}}
+#' \code{\link{ppi_enrichment}}
 #'
 #' @examples
 #' \dontrun{
-#' # make interactions request
-#' get_interactions(identifier = 'ADD')
+#' # make an enrichment request
+#' enrichment(identifiers = c('trpA','trpB','trpC','trpE','trpGD'))
+#' }
+#'
+#' @source https://string-db.org/cgi/help.pl?subpage=api%23getting-functional-enrichment
+#'
+#' @export
+enrichment <- function(identifiers = NULL, background_string_identifiers,
+                       species = 9606, caller_identity) {
+  # construct query
+  param <- build_query(identifiers = identifiers,
+                       background_string_identifiers = background_string_identifiers,
+                       species = species)
+
+  # make url
+  url <- make_url(database = 'string-db.org',
+                  request = 'get_string_ids',
+                  parameters = param)
+
+  # get response
+  resp <- send_request(url)
+
+  # format contents
+  res <- format_content(resp)
+
+  # return results
+  return(res)
+}
+
+#' Retrieving functional annotation
+#'
+#' Gets the functional annotation (Gene Ontology, UniProt Keywords, PFAM,
+#' INTERPRO and SMART domains) of your list of proteins.
+#'
+#' @inheritParams build_query
+#'
+#' @return A \code{tibble}.
+#' \describe{
+#'  \item{category}{term category (e.g. GO Process, KEGG pathways)}
+#'  \item{term}{enriched term (GO term, domain or pathway)}
+#'  \item{number_of_genes}{number of genes in your input list with the term
+#'  assigned}
+#'  \item{ratio_in_set}{ratio of the proteins in your input list with the
+#'  term assigned}
+#'  \item{ncbiTaxonId}{NCBI taxon identifier}
+#'  \item{inputGenes}{gene names from your input}
+#'  \item{preferredNames}{common protein names (in the same order as your
+#'  input Genes)}
+#'  \item{description}{description of the enriched term}
+#' }
+#'
+#' @family API methods
+#'
+#' @seealso
+#' \code{\link{get_string_ids}}
+#' \code{\link{network}}
+#' \code{\link{interaction_partners}}
+#' \code{\link{homology}}
+#' \code{\link{homology_best}}
+#' \code{\link{enrichment}}
+#' \code{\link{ppi_enrichment}}
+#'
+#' @source https://string-db.org/cgi/help.pl?subpage=api%23retrieving-functional-annotation
+#'
+#' @examples
+#' \dontrun{
+#' # make a functional_annotation request
+#' functional_annotation(identifiers = 'cdk1')
 #' }
 #'
 #' @export
-get_interactions <- function(identifier = NULL, limit = 5, required_score,
-                             additional_network_nodes, db = 'string') {
-  # decide request type
-  if(length(identifier) > 1) {
-    request <- 'interactionsList'
-  } else {
-    request <- 'interactions'
-  }
-
+functional_annotation <- function(identifiers = NULL, species = 9606,
+                                  allow_pubmed = 0, caller_identity) {
   # construct query
-  param <- build_query(request,
-                       identifier = identifier,
-                       limit = limit,
-                       required_score = required_score,
-                       additional_network_nodes = additional_network_nodes)
-
-  # construct hostname
-  if(missing(db)) {
-    db <- 'string'
-  }
-  database <- build_hostname(db)
+  param <- build_query(identifiers = identifiers,
+                       species = species,
+                       allow_pubmed = allow_pubmed)
 
   # make url
-  url <- make_url(database = database,
-                  request = request,
+  url <- make_url(database = 'string-db.org',
+                  request = 'get_string_ids',
+                  parameters = param)
+
+  # get response
+  resp <- send_request(url)
+
+  # format contents
+  res <- format_content(resp)
+
+  # return results
+  return(res)
+}
+
+#' Getting protein-protein interaction enrichment
+#'
+#' Tests if your network has more interactions than expected.
+#'
+#' @inheritParams build_query
+#'
+#' @return A \code{tibble}.
+#' \describe{
+#'  \item{number_of_nodes}{number of proteins in your network}
+#'  \item{number_of_edges}{number of edges in your network}
+#'  \item{average_node_degree}{mean degree of the node in your network}
+#'  \item{local_clustering_coefficient}{average local clustering coefficient}
+#'  \item{expected_number_of_edges}{expected number of edges based on the nodes
+#'   degrees}
+#'  \item{p_value}{significance of your network having more interactions than expected}
+#' }
+#'
+#' @family API methods
+#'
+#' @seealso
+#' \code{\link{get_string_ids}}
+#' \code{\link{network}}
+#' \code{\link{interaction_partners}}
+#' \code{\link{homology}}
+#' \code{\link{homology_best}}
+#' \code{\link{enrichment}}
+#' \code{\link{functional_annotation}}
+#'
+#' @source https://string-db.org/cgi/help.pl?subpage=api%23getting-protein-protein-interaction-enrichment
+#'
+#' @examples
+#' \dontrun{
+#' # make a ppi_enrichment request
+#' ppi_enrichment(identifiers = c('trpA','trpB','trpC','trpE','trpGD'))
+#' }
+#'
+#' @export
+ppi_enrichment <- function(identifiers = NULL, species = 9606, required_score,
+                           caller_identity) {
+  # construct query
+  param <- build_query(identifiers = identifiers,
+                       species = species,
+                       required_score = required_score)
+
+  # make url
+  url <- make_url(database = 'string-db.org',
+                  request = 'get_string_ids',
                   parameters = param)
 
   # get response

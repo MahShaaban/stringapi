@@ -1,51 +1,62 @@
 context("test-requests")
 
-test_that("test get_resolve", {
-  res <- get_resolve(identifier = 'ADD')
-  expect_true(is.data.frame(res))
-  expect_true(nrow(res) > 1)
+test_that('get_string_ids works', {
+  # make a get_string_ids request
+  res <- get_string_ids(identifiers = c('p53', 'dcdk2'),
+                        species = 9606)
 
-  res <- get_resolve(identifier = c('ADD', 'ATG7'))
-  expect_true(is.data.frame(res))
-  expect_true(nrow(res) > 1)
+  expect_true(nrow(res) >= 1)
 })
 
-test_that("test get_abstracts", {
-  res <- get_abstracts(identifier = '4932.YML115C')
-  expect_true(is.data.frame(res))
-  expect_true(nrow(res) > 1)
+test_that('network works', {
+  # make a network request
+  res <- network(identifiers = c('TP53', 'EGFR', 'CDK2'),
+                 required_score = 400)
 
-  res <- get_abstracts(identifier = c('4932.YML115C', '4932.YJR075W', '4932.YEL036C'))
-  expect_true(is.data.frame(res))
-  expect_true(nrow(res) > 1)
+  expect_true(nrow(res) >= 1)
 })
 
-test_that("test get_actions", {
-  res <- get_actions(identifier = 'ADD')
-  expect_true(is.data.frame(res))
-  expect_true(nrow(res) > 1)
+test_that('interaction_partners works', {
+  # make a network request
+  res <- # make a interaction_partners request
+    interaction_partners(identifiers = c('TP53', 'CDK2'),
+                         limit = 10)
 
-  res <- get_actions(identifier = c('ADD', 'ATG7'))
-  expect_true(is.data.frame(res))
-  expect_true(nrow(res) > 1)
+  expect_true(nrow(res) >= 1)
 })
 
-test_that("test get_interactors", {
-  res <- get_interactors(identifier = 'ADD')
-  expect_true(is.data.frame(res))
-  expect_true(nrow(res) > 1)
+test_that('homology works', {
+  # make a homology request
+  res <- homology(identifiers = c('TP53', 'CDK2'))
 
-  res <- get_interactors(identifier = c('ADD', 'ATG7'))
-  expect_true(is.data.frame(res))
-  expect_true(nrow(res) > 1)
+  expect_true(nrow(res) >= 1)
 })
 
-test_that("test get_interactions", {
-  res <- get_interactions(identifier = 'ATG7')
-  expect_true(is.data.frame(res))
-  expect_true(nrow(res) > 1)
+test_that('homology_best works', {
+  # make a homology_best request
+  res <- homology_best(identifiers = 'CDK1',
+                       species_b = 10090)
 
-  res <- get_interactions(identifier = c('ATG7', 'ATG8'))
-  expect_true(is.data.frame(res))
-  expect_true(nrow(res) > 1)
+  expect_true(nrow(res) >= 1)
+})
+
+test_that('enrichment works', {
+  # make an enrichment request
+  res <- enrichment(identifiers = c('trpA','trpB','trpC','trpE','trpGD'))
+
+  expect_true(nrow(res) >= 1)
+})
+
+test_that('functional_annotation works', {
+  # make a functional_annotation request
+  res <- functional_annotation(identifiers = 'cdk1')
+
+  expect_true(nrow(res) >= 1)
+})
+
+test_that('ppi_enrichment works', {
+  # make a ppi_enrichment request
+  res <- ppi_enrichment(identifiers = c('trpA','trpB','trpC','trpE','trpGD'))
+
+  expect_true(nrow(res) >= 1)
 })

@@ -4,23 +4,30 @@
 \alias{build_query}
 \title{Build a query list}
 \usage{
-build_query(request, identifier, species, limit, required_score,
-  additional_network_nodes, format)
+build_query(identifiers, background_string_identifiers, echo_query,
+  species, species_b, limit, required_score, add_nodes, allow_pubmed,
+  caller_identity)
 }
 \arguments{
-\item{request}{A \code{character} string.}
+\item{identifiers}{A \code{character} string.}
 
-\item{identifier}{A \code{character} string.}
+\item{background_string_identifiers}{A \code{character} string.}
+
+\item{echo_query}{A \code{logical} in the form '0' (default) or '1'.}
 
 \item{species}{A \code{numeric}.}
 
+\item{species_b}{A \code{numeric}.}
+
 \item{limit}{A \code{numeric}.}
 
-\item{required_score}{A \code{numeric}.}
+\item{required_score}{A \code{numeric}. Values are from 0 to 1000.}
 
-\item{additional_network_nodes}{A \code{numeric}.}
+\item{add_nodes}{A \code{numeric}.}
 
-\item{format}{A \code{character} string.}
+\item{allow_pubmed}{A \code{logical} in the form '1' (default) or '0'.}
+
+\item{caller_identity}{A \code{character} string.}
 }
 \value{
 A \code{list}.
@@ -29,10 +36,8 @@ A \code{list}.
 Build a query list
 }
 \examples{
-# build a query list for resolve request
-build_query('resolve',
-            identifier = 'ADD',
-            species = 9606,
-            format = 'full')
+# build a query list for 'PTCH1' species 9606
+build_query(identifiers = 'PTCH1',
+            species = 9606)
 
 }

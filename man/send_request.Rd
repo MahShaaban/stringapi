@@ -17,8 +17,8 @@ Send a GET request and return the response or the error.
 }
 \examples{
 \dontrun{
-# make a resolve request for ADD
-url <- make_url(parameters = list(identifier = 'ADD'))
+# make a resolve request for PTCH1
+make_url(parameters = list(identifier = 'PTCH1'))
 
 # send request
 send_request(url)

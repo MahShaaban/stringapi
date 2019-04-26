@@ -1,9 +1,0 @@
-column,description
-nscore,"neighborhood score, (computed from the inter-gene nucleotide count)"
-fscore,fusion score (derived from fused proteins in other species)
-pscore,cooccurence score of the phyletic profile (derived from similar absence/presence patterns of genes)
-hscore,"homology score, the degree of homology of the interactors (normally not reported in STRING)"
-ascore,coexpression score (derived from similar pattern of mRNA expression measured by DNA arrays and similar technologies)
-escore,"experimental score (derived from experimental data, e.g., affinity chromatography)"
-dscore,database score (derived from curated data of various databases)
-tscore,textmining score (derived from the co-occurrence of gene/protein names in abstracts)

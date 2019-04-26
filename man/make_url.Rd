@@ -5,22 +5,19 @@
 \title{Make a URL}
 \usage{
 make_url(database = "string-db.org", access = "api", format = "tsv",
-  request = "resolve", parameters = NULL)
+  request = "get_string_ids", parameters = NULL)
 }
 \arguments{
-\item{database}{A \code{character}. Possible values are 'string-db.org'
-(default) or 'string.embl.de' for the STRING database or 'stitch.embl.de'
-for the STITCH sister database.}
+\item{database}{A \code{character}. Possible value is 'string-db.org'.}
 
 \item{access}{A \code{character}. Possible values are 'api' (default) or
 services (not used).}
 
 \item{format}{A \code{character}. Only 'tsv' is used.}
 
-\item{request}{A \code{character}. Possibel values are 'resolve' (default),
-'abstracts', 'actions', 'interactors' or 'interactions'. A corresponding
-request with the name 'requstList' is also available when querying for more
-than one item.}
+\item{request}{A \code{character}. Possibel values are 'get_string_ids'
+(default), network', 'interaction_partners', 'homology', 'homology_best',
+'enrichment', 'functional_annotation', 'ppi_enrichment' or 'version'.}
 
 \item{parameters}{A \code{list}. Different requests require different
 parameters. The allowed parameters are documented in individual request
@@ -34,7 +31,7 @@ Make a valid URL for the STRING API request. The functions translates STRING
 required URL fields into \code{modify_url} arguments.
 }
 \examples{
-# make a resolve request for ADD
-make_url(parameters = list(identifier = 'ADD'))
+# make a resolve request for PTCH1
+make_url(parameters = list(identifier = 'PTCH1'))
 
 }
