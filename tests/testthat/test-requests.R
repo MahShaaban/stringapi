@@ -11,7 +11,7 @@ test_that('get_string_ids works', {
 test_that('network works', {
   # make a network request
   res <- network(identifiers = c('TP53', 'EGFR', 'CDK2'),
-                 required_score = 400)
+                 species = 9606)
 
   expect_true(nrow(res) >= 1)
 })
@@ -44,7 +44,7 @@ test_that('enrichment works', {
   # make an enrichment request
   res <- enrichment(identifiers = c('trpA','trpB','trpC','trpE','trpGD'))
 
-  expect_true(nrow(res) >= 1)
+  expect_true(is.data.frame(res))
 })
 
 test_that('functional_annotation works', {

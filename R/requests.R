@@ -3,7 +3,11 @@
 #' Maps common protein names, synonyms and UniProt identifiers into STRING
 #' identifiers.
 #'
-#' @inheritParams build_query
+#' @param identifiers A \code{character} string.
+#' @param echo_query A \code{logical} in the form '0' (default) or '1'.
+#' @param species A \code{numeric}.
+#' @param limit A \code{numeric}.
+#' @param caller_identity A \code{character} string.
 #'
 #' @return A \code{tibble}.
 #' \describe{
@@ -37,19 +41,32 @@
 #'                species = 9606)
 #' }
 #'
+#' @importFrom apihelpers make_query send_request format_content
+#' @importFrom httr modify_url
+#'
 #' @export
 get_string_ids <- function(identifiers = NULL, echo_query = 0, limit = 5,
                         species = 9606, caller_identity) {
+  # collect arguments in a list
+  param <- as.list(environment())
+
+  # remove missing arguments
+  ind <- unlist(lapply(param, is.name))
+  param <- param[!ind]
+
   # construct query
-  param <- build_query(identifiers = identifiers,
-                       echo_query = echo_query,
-                       limit = limit,
-                       species = species)
+  query <- make_query(
+    request = 'get_string_ids',
+    parameters = param,
+    query_map = query_map_string
+  )
 
   # make url
-  url <- make_url(database = 'string-db.org',
-                  request = 'get_string_ids',
-                  parameters = param)
+  url <- modify_url('',
+                    scheme = 'https',
+                    hostname = 'string-db.org',
+                    path = 'api/tsv/get_string_ids',
+                    query = query)
 
   # get response
   resp <- send_request(url)
@@ -66,7 +83,11 @@ get_string_ids <- function(identifiers = NULL, echo_query = 0, limit = 5,
 #' Retrieves the network interactions for your input protein(s) in various
 #' text based formats.
 #'
-#' @inheritParams build_query
+#' @param identifiers A \code{character} string.
+#' @param species A \code{numeric}.
+#' @param required_score A \code{numeric}. Values are from 0 to 1000.
+#' @param add_nodes A \code{numeric}.
+#' @param caller_identity A \code{character} string.
 #'
 #' @return A \code{tibble}.
 #' \describe{
@@ -105,19 +126,32 @@ get_string_ids <- function(identifiers = NULL, echo_query = 0, limit = 5,
 #'            required_score = 400)
 #' }
 #'
+#' @importFrom apihelpers make_query send_request format_content
+#' @importFrom httr modify_url
+#'
 #' @export
 network <- function(identifiers = NULL, species = 9606, required_score,
                     add_nodes, caller_identity) {
+  # collect arguments in a list
+  param <- as.list(environment())
+
+  # remove missing arguments
+  ind <- unlist(lapply(param, is.name))
+  param <- param[!ind]
+
   # construct query
-  param <- build_query(identifiers = identifiers,
-                       species = species,
-                       required_score = required_score,
-                       add_nodes = add_nodes)
+  query <- make_query(
+    request = 'network',
+    parameters = param,
+    query_map = query_map_string
+  )
 
   # make url
-  url <- make_url(database = 'string-db.org',
-                  request = 'network',
-                  parameters = param)
+  url <- modify_url('',
+                    scheme = 'https',
+                    hostname = 'string-db.org',
+                    path = 'api/tsv/network',
+                    query = query)
 
   # get response
   resp <- send_request(url)
@@ -133,7 +167,11 @@ network <- function(identifiers = NULL, species = 9606, required_score,
 #'
 #' Gets all the STRING interaction partners of your proteins.
 #'
-#' @inheritParams build_query
+#' @param identifiers A \code{character} string.
+#' @param species A \code{numeric}.
+#' @param limit A \code{numeric}.
+#' @param required_score A \code{numeric}. Values are from 0 to 1000.
+#' @param caller_identity A \code{character} string.
 #'
 #' @return A \code{tibble}.
 #' \describe{
@@ -172,19 +210,32 @@ network <- function(identifiers = NULL, species = 9606, required_score,
 #'                      limit = 10)
 #' }
 #'
+#' @importFrom apihelpers make_query send_request format_content
+#' @importFrom httr modify_url
+#'
 #' @export
 interaction_partners <- function(identifiers = NULL, limit = 5, species = 9606,
                                  required_score, caller_identity) {
+  # collect arguments in a list
+  param <- as.list(environment())
+
+  # remove missing arguments
+  ind <- unlist(lapply(param, is.name))
+  param <- param[!ind]
+
   # construct query
-  param <- build_query(identifiers = identifiers,
-                       limit = limit,
-                       species = species,
-                       required_score = required_score)
+  query <- make_query(
+    request = 'interaction_partners',
+    parameters = param,
+    query_map = query_map_string
+  )
 
   # make url
-  url <- make_url(database = 'string-db.org',
-                  request = 'get_string_ids',
-                  parameters = param)
+  url <- modify_url('',
+                    scheme = 'https',
+                    hostname = 'string-db.org',
+                    path = 'api/tsv/interaction_partners',
+                    query = query)
 
   # get response
   resp <- send_request(url)
@@ -200,7 +251,9 @@ interaction_partners <- function(identifiers = NULL, limit = 5, species = 9606,
 #'
 #' Retrieve the protein similarity scores between the input proteins.
 #'
-#' @inheritParams build_query
+#' @param identifiers A \code{character} string.
+#' @param species A \code{numeric}.
+#' @param caller_identity A \code{character} string.
 #'
 #' @return A \code{tibble}.
 #' \describe{
@@ -230,16 +283,31 @@ interaction_partners <- function(identifiers = NULL, limit = 5, species = 9606,
 #' homology(identifiers = c('TP53', 'CDK2'))
 #' }
 #'
+#' @importFrom apihelpers make_query send_request format_content
+#' @importFrom httr modify_url
+#'
 #' @export
 homology <- function(identifiers = NULL, species = 9606, caller_identity) {
+  # collect arguments in a list
+  param <- as.list(environment())
+
+  # remove missing arguments
+  ind <- unlist(lapply(param, is.name))
+  param <- param[!ind]
+
   # construct query
-  param <- build_query(identifiers = identifiers,
-                       species = species)
+  query <- make_query(
+    request = 'homology',
+    parameters = param,
+    query_map = query_map_string
+  )
 
   # make url
-  url <- make_url(database = 'string-db.org',
-                  request = 'get_string_ids',
-                  parameters = param)
+  url <- modify_url('',
+                    scheme = 'https',
+                    hostname = 'string-db.org',
+                    path = 'api/tsv/homology',
+                    query = query)
 
   # get response
   resp <- send_request(url)
@@ -256,7 +324,10 @@ homology <- function(identifiers = NULL, species = 9606, caller_identity) {
 #' Retrieve the best (highest) protein similarity hit between different species
 #' in your input.
 #'
-#' @inheritParams build_query
+#' @param identifiers A \code{character} string.
+#' @param species A \code{numeric}.
+#' @param species_b A \code{numeric}.
+#' @param caller_identity A \code{character} string.
 #'
 #' @return A \code{tibble}.
 #' \describe{
@@ -287,18 +358,32 @@ homology <- function(identifiers = NULL, species = 9606, caller_identity) {
 #'               species_b = 10090)
 #' }
 #'
+#' @importFrom apihelpers make_query send_request format_content
+#' @importFrom httr modify_url
+#'
 #' @export
 homology_best <- function(identifiers = NULL, species = 9606, species_b,
                           caller_identity) {
+  # collect arguments in a list
+  param <- as.list(environment())
+
+  # remove missing arguments
+  ind <- unlist(lapply(param, is.name))
+  param <- param[!ind]
+
   # construct query
-  param <- build_query(identifiers = identifiers,
-                       species = species,
-                       species_b = species_b)
+  query <- make_query(
+    request = 'homology_best',
+    parameters = param,
+    query_map = query_map_string
+  )
 
   # make url
-  url <- make_url(database = 'string-db.org',
-                  request = 'get_string_ids',
-                  parameters = param)
+  url <- modify_url('',
+                    scheme = 'https',
+                    hostname = 'string-db.org',
+                    path = 'api/tsv/homology_best',
+                    query = query)
 
   # get response
   resp <- send_request(url)
@@ -316,7 +401,10 @@ homology_best <- function(identifiers = NULL, species = 9606, species_b,
 #' Ontology, KEGG pathways, UniProt Keywords, PubMed publications, Pfam,
 #' InterPro and SMART domains.
 #'
-#' @inheritParams build_query
+#' @param identifiers A \code{character} string.
+#' @param background_string_identifiers A \code{character} string.
+#' @param species A \code{numeric}.
+#' @param caller_identity A \code{character} string.
 #'
 #' @return A \code{tibble}.
 #' \describe{
@@ -346,26 +434,40 @@ homology_best <- function(identifiers = NULL, species = 9606, species_b,
 #' \code{\link{functional_annotation}}
 #' \code{\link{ppi_enrichment}}
 #'
+#' @source https://string-db.org/cgi/help.pl?subpage=api%23getting-functional-enrichment
+#'
 #' @examples
 #' \dontrun{
 #' # make an enrichment request
 #' enrichment(identifiers = c('trpA','trpB','trpC','trpE','trpGD'))
 #' }
 #'
-#' @source https://string-db.org/cgi/help.pl?subpage=api%23getting-functional-enrichment
+#' @importFrom apihelpers make_query send_request format_content
+#' @importFrom httr modify_url
 #'
 #' @export
 enrichment <- function(identifiers = NULL, background_string_identifiers,
                        species = 9606, caller_identity) {
+  # collect arguments in a list
+  param <- as.list(environment())
+
+  # remove missing arguments
+  ind <- unlist(lapply(param, is.name))
+  param <- param[!ind]
+
   # construct query
-  param <- build_query(identifiers = identifiers,
-                       background_string_identifiers = background_string_identifiers,
-                       species = species)
+  query <- make_query(
+    request = 'enrichment',
+    parameters = param,
+    query_map = query_map_string
+  )
 
   # make url
-  url <- make_url(database = 'string-db.org',
-                  request = 'get_string_ids',
-                  parameters = param)
+  url <- modify_url('',
+                    scheme = 'https',
+                    hostname = 'string-db.org',
+                    path = 'api/tsv/enrichment',
+                    query = query)
 
   # get response
   resp <- send_request(url)
@@ -382,7 +484,10 @@ enrichment <- function(identifiers = NULL, background_string_identifiers,
 #' Gets the functional annotation (Gene Ontology, UniProt Keywords, PFAM,
 #' INTERPRO and SMART domains) of your list of proteins.
 #'
-#' @inheritParams build_query
+#' @param identifiers A \code{character} string.
+#' @param species A \code{numeric}.
+#' @param allow_pubmed A \code{logical} in the form '1' (default) or '0'.
+#' @param caller_identity A \code{character} string.
 #'
 #' @return A \code{tibble}.
 #' \describe{
@@ -418,18 +523,32 @@ enrichment <- function(identifiers = NULL, background_string_identifiers,
 #' functional_annotation(identifiers = 'cdk1')
 #' }
 #'
+#' @importFrom apihelpers make_query send_request format_content
+#' @importFrom httr modify_url
+#'
 #' @export
 functional_annotation <- function(identifiers = NULL, species = 9606,
                                   allow_pubmed = 0, caller_identity) {
+  # collect arguments in a list
+  param <- as.list(environment())
+
+  # remove missing arguments
+  ind <- unlist(lapply(param, is.name))
+  param <- param[!ind]
+
   # construct query
-  param <- build_query(identifiers = identifiers,
-                       species = species,
-                       allow_pubmed = allow_pubmed)
+  query <- make_query(
+    request = 'functional_annotation',
+    parameters = param,
+    query_map = query_map_string
+  )
 
   # make url
-  url <- make_url(database = 'string-db.org',
-                  request = 'get_string_ids',
-                  parameters = param)
+  url <- modify_url('',
+                    scheme = 'https',
+                    hostname = 'string-db.org',
+                    path = 'api/tsv/functional_annotation',
+                    query = query)
 
   # get response
   resp <- send_request(url)
@@ -445,7 +564,10 @@ functional_annotation <- function(identifiers = NULL, species = 9606,
 #'
 #' Tests if your network has more interactions than expected.
 #'
-#' @inheritParams build_query
+#' @param identifiers A \code{character} string.
+#' @param species A \code{numeric}.
+#' @param required_score A \code{numeric}. Values are from 0 to 1000.
+#' @param caller_identity A \code{character} string.
 #'
 #' @return A \code{tibble}.
 #' \describe{
@@ -477,18 +599,32 @@ functional_annotation <- function(identifiers = NULL, species = 9606,
 #' ppi_enrichment(identifiers = c('trpA','trpB','trpC','trpE','trpGD'))
 #' }
 #'
+#' @importFrom apihelpers make_query send_request format_content
+#' @importFrom httr modify_url
+#'
 #' @export
 ppi_enrichment <- function(identifiers = NULL, species = 9606, required_score,
                            caller_identity) {
+  # collect arguments in a list
+  param <- as.list(environment())
+
+  # remove missing arguments
+  ind <- unlist(lapply(param, is.name))
+  param <- param[!ind]
+
   # construct query
-  param <- build_query(identifiers = identifiers,
-                       species = species,
-                       required_score = required_score)
+  query <- make_query(
+    request = 'ppi_enrichment',
+    parameters = param,
+    query_map = query_map_string
+  )
 
   # make url
-  url <- make_url(database = 'string-db.org',
-                  request = 'get_string_ids',
-                  parameters = param)
+  url <- modify_url('',
+                    scheme = 'https',
+                    hostname = 'string-db.org',
+                    path = 'api/tsv/ppi_enrichment',
+                    query = query)
 
   # get response
   resp <- send_request(url)

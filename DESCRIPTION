@@ -13,8 +13,11 @@ Description: Provide a set of functions to interact with the STRING API in R.
   query parameters are checked and the output is returned in a tibble.
 Encoding: UTF-8
 LazyData: true
+Depends: R (>= 2.10)
+Remotes: abifromr/apihelpers
 Imports: httr,
-  readr
+  readr,
+  apihelpers
 Suggests: 
     testthat,
     covr
