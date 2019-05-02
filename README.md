@@ -1,6 +1,6 @@
-[![Travis build status](https://travis-ci.org/MahShaaban/stringapi.svg?branch=master)](https://travis-ci.org/MahShaaban/stringapi)
-[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/MahShaaban/stringapi?branch=master&svg=true)](https://ci.appveyor.com/project/MahShaaban/stringapi)
-[![Codecov test coverage](https://codecov.io/gh/MahShaaban/stringapi/branch/master/graph/badge.svg)](https://codecov.io/gh/MahShaaban/stringapi?branch=master)
+[![Travis build status](https://travis-ci.org/abifromr/stringapi.svg?branch=master)](https://travis-ci.org/abifromr/stringapi)
+[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/abifromr/stringapi?branch=master&svg=true)](https://ci.appveyor.com/project/abifromr/stringapi)
+[![Codecov test coverage](https://codecov.io/gh/abifromr/stringapi/branch/master/graph/badge.svg)](https://codecov.io/gh/abifromr/stringapi?branch=master)
 
 # stringapi
 
@@ -15,7 +15,7 @@ Provide a set of functions to interact with the [STRING](https://string-db.org/c
 The package can be installed using `devtools`
 
 ```r
-devtools::install_github('MahShaaban/stringapi')
+devtools::install_github('abifromr/stringapi')
 ```
 
 ## Getting started

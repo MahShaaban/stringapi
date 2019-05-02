@@ -6,8 +6,8 @@ License: GPL-3
 Authors@R: person("Mahmoud", "Ahmed",
   email = "mahmoud.s.fahmy@students.kasralainy.edu.eg",
   role = c("aut", "cre"))
-URL: https://github.com/MahShaaban/stringapi
-BugReports: https://github.com/MahShaaban/stringapi/issues
+URL: https://github.com/abifromr/stringapi
+BugReports: https://github.com/abifromr/stringapi/issues
 Description: Provide a set of functions to interact with the STRING API in R.
   The functions are organized a round the API database and request types. The
   query parameters are checked and the output is returned in a tibble.
